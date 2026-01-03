@@ -1,0 +1,2976 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fleet Dashboard</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#111b2e;
+      --muted:#8fa3c8;
+      --text:#e7efff;
+      --accent:#66e3ff;
+      --danger:#ff5c7a;
+      --ok:#4dff9b;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:radial-gradient(1200px 800px at 10% 10%, rgba(102,227,255,.14), transparent 45%),
+                 radial-gradient(1000px 700px at 80% 10%, rgba(77,255,155,.10), transparent 50%),
+                 radial-gradient(900px 700px at 50% 90%, rgba(255,92,122,.10), transparent 55%),
+                 var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:var(--accent)}
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 48px;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      background:linear-gradient(135deg, rgba(102,227,255,.9), rgba(77,255,155,.85));
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    .title h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .title p{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .pill{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      padding:10px 12px;
+      border-radius:999px;
+      display:flex; gap:10px; align-items:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .pill strong{color:var(--text); font-weight:600}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:600;
+      transition:transform .05s ease, background .15s ease, border .15s ease;
+      display:inline-flex; gap:8px; align-items:center; justify-content:center;
+      user-select:none;
+    }
+    .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(102,227,255,.35)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(102,227,255,.95), rgba(77,255,155,.90));
+      border-color:transparent;
+      color:#07121f;
+    }
+    .btn.danger{
+      background:rgba(255,92,122,.12);
+      border-color:rgba(255,92,122,.25);
+      color:#ffd0d8;
+    }
+    .btn.small{padding:8px 10px;border-radius:10px;font-size:13px}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+    .card{
+      background:rgba(17,27,46,.86);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .card h2{margin:0 0 8px;font-size:15px}
+    .card h3{margin:16px 0 8px;font-size:14px;color:#dbe7ff}
+    .muted{color:var(--muted);font-size:13px;line-height:1.35}
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .tab{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .tab.active{
+      background:rgba(102,227,255,.14);
+      border-color:rgba(102,227,255,.35);
+      color:#dff9ff;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+    input, select{
+      width:100%;
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      outline:none;
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      font-size:14px;
+    }
+    input::placeholder{color:rgba(143,163,200,.6)}
+    input:focus, select:focus{border-color:rgba(102,227,255,.55)}
+    .kpi{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    .kpi .box{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+    .kpi .box .t{font-size:12px;color:var(--muted)}
+    .kpi .box .v{font-family:var(--mono); font-size:16px; margin-top:6px}
+    .kpi .box .v.ok{color:var(--ok)}
+    .kpi .box .v.bad{color:#ffd0d8}
+    .inline{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin-top:12px;
+    }
+    .inline.right{justify-content:flex-end}
+    .hr{height:1px;background:var(--line);margin:14px 0}
+    .tablewrap{overflow:auto; border-radius:14px; border:1px solid var(--line); margin-top:10px}
+    table{width:100%; border-collapse:collapse; font-size:13px}
+    th,td{padding:10px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+    th{color:#dbe7ff; font-size:12px; letter-spacing:.3px; text-transform:uppercase}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .badge{
+      display:inline-flex; padding:3px 8px; border-radius:999px;
+      font-size:12px; border:1px solid var(--line); color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+    .notice{
+      border:1px solid rgba(102,227,255,.25);
+      background:rgba(102,227,255,.10);
+      color:#dff9ff;
+      padding:10px 12px;
+      border-radius:14px;
+      font-size:13px;
+      margin-top:10px;
+    }
+    .error{
+      border:1px solid rgba(255,92,122,.28);
+      background:rgba(255,92,122,.12);
+      color:#ffd0d8;
+      padding:10px 12px;
+      border-radius:14px;
+      font-size:13px;
+      margin-top:10px;
+    }
+    .hide{display:none !important}
+    .mono{font-family:var(--mono)}
+    .loginShell{
+      max-width:520px;
+      margin:10vh auto 0;
+      padding:0 18px;
+    }
+    .loginShell .card{padding:18px}
+    .footerHint{
+      margin-top:10px;
+      color:rgba(143,163,200,.7);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    /* Print styles for PDF export */
+    @media print{
+      body{background:#fff; color:#000}
+      header, .tabs, .no-print{display:none !important}
+      .wrap{max-width:none; padding:0}
+      .card{box-shadow:none; background:#fff; border:1px solid #ddd}
+      table, th, td{border-color:#ddd}
+      .badge{border-color:#ddd; color:#333}
+    }
+  
+    /* Slightly smaller KPI boxes to allow more KPIs later */
+    .kpi .box{
+      padding:10px;
+    }
+    .kpi .box .v{
+      font-size:15px;
+    }
+    .kpi .box .t{
+      font-size:11px;
+    }
+
+
+    /* Auto-wrapping KPI grids (adds new KPI boxes without breaking layout) */
+    .kpi{
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    }
+
+</style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginView" class="loginShell">
+    <div class="card">
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="title">
+          <h1>Fleet Dashboard</h1>
+          <p>Cab driver shifts • income • fuel • reports</p>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <div>
+          <label>Username</label>
+          <input id="loginUser" placeholder="e.g. warren" autocomplete="username" />
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+      </div>
+      <div class="inline right">
+        <button class="btn primary" id="btnLogin">Log in</button>
+      </div>
+      <div id="loginMsg" class="error hide"></div>
+      <div class="footerHint">
+        <div><span class="badge">Local-only</span> Data is stored in <span class="mono">localStorage</span> on this browser.</div>
+        <div>Default admin (Fleet Owner): <span class="mono">warren / warren</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" class="wrap hide">
+    <header>
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="title">
+          <h1>Fleet Dashboard</h1>
+          <p id="subtitle">Signed in</p>
+        </div>
+      </div>
+
+      <div class="pill">
+        <span>Role:</span> <strong id="pillRole">—</strong>
+        <span class="mono" id="pillUser">—</span>
+        <button class="btn small danger no-print" id="btnLogout">Logout</button>
+      </div>
+    </header>
+
+    <div class="tabs no-print">
+      <div class="tab active" data-tab="entry">Data Entry</div>
+      <div class="tab" data-tab="report">Report</div>
+      <div class="tab" data-tab="wages" id="wagesTab">Wages</div>
+      <div class="tab" data-tab="admin" id="adminTab">Admin</div>
+      <div class="tab" data-tab="perms" id="permsTab">Roles &amp; Permissions</div>
+      <div class="tab" data-tab="settings">Settings</div>
+    </div>
+
+    <div id="tab-entry" class="grid">
+      <div class="card">
+        <h2>Shift entry</h2>
+        <p class="muted">Pick a driver and car, then enter shift times, KM, income, and fuel. Calculations update automatically.</p>
+
+        <div class="row">
+          <div>
+            <label>Driver</label>
+            <select id="driverSelect"></select>
+          </div>
+          <div>
+            <label>Car</label>
+            <select id="carSelect"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input id="date" type="date" />
+          </div>
+          <div>
+            <label>Notes (optional)</label>
+            <input id="notes" placeholder="e.g. airport runs, issues, etc." />
+          </div>
+        </div>
+
+        <h3>Shift</h3>
+        <div class="row">
+          <div>
+            <label>Shift start</label>
+            <input id="shiftStart" type="time" />
+          </div>
+          <div>
+            <label>Shift end</label>
+            <input id="shiftEnd" type="time" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>KM start</label>
+            <input id="kmStart" type="number" step="0.1" min="0" placeholder="0" />
+          </div>
+          <div>
+            <label>KM finish</label>
+            <input id="kmEnd" type="number" step="0.1" min="0" placeholder="0" />
+          </div>
+        </div>
+
+        <h3>Gross income</h3>
+        <div class="row">
+          <div>
+            <label>Bolt</label>
+            <input id="bolt" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Uber</label>
+            <input id="uber" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Ecabs</label>
+            <input id="ecabs" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Other trips</label>
+            <input id="otherTrips" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+        </div>
+
+        <h3>Expense</h3>
+        <div class="row">
+          <div>
+            <label>Fuel consumption (liters)</label>
+            <input id="fuelLiters" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Fuel cost (optional)</label>
+            <input id="fuelCost" type="number" step="0.01" min="0" placeholder="0.00" />
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="t">Hours worked</div>
+            <div class="v" id="kpiHours">0.00</div>
+          </div>
+          <div class="box">
+            <div class="t">Total KM</div>
+            <div class="v" id="kpiKm">0.0</div>
+          </div>
+          <div class="box">
+            <div class="t">Total Gross</div>
+            <div class="v ok" id="kpiGross">0.00</div>
+          </div>
+          <div class="box">
+            <div class="t">Avg gross / hour</div>
+            <div class="v" id="kpiAvgGross">0.00</div>
+          </div>
+        </div>
+
+        <div class="kpi" style="grid-template-columns:repeat(3,1fr)">
+          <div class="box">
+            <div class="t">Fuel / KM (L/km)</div>
+            <div class="v" id="kpiFuelPerKm">0.000</div>
+          </div>
+          <div class="box">
+            <div class="t">Fuel / hour (L/hr)</div>
+            <div class="v" id="kpiFuelPerHr">0.00</div>
+          </div>
+          <div class="box">
+            <div class="t">Net (Gross - fuel cost)</div>
+            <div class="v" id="kpiNet">0.00</div>
+          </div>
+        </div>
+
+        <div id="entryMsg" class="notice hide"></div>
+        <div id="entryErr" class="error hide"></div>
+
+        <div class="inline right no-print">
+          <button class="btn" id="btnClear">Clear</button>
+          <button class="btn primary" id="btnSave">Save entry</button>
+        </div>
+
+        <div class="hr"></div>
+        <h3>Recent entries (selected driver)</h3>
+        <p class="muted">Click a row to load it back into the form for editing.</p>
+        <div class="tablewrap">
+          <table id="recentTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Car</th>
+                <th>Hours</th>
+                <th>KM</th>
+                <th>Gross</th>
+                <th>Fuel L</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="inline right no-print">
+          <button class="btn danger" id="btnDeleteEntry">Delete loaded entry</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Quick help</h2>
+        <div class="notice">
+          <div><strong>Overnight shifts:</strong> if end time is earlier than start time, it’s treated as next day.</div>
+          <div style="margin-top:8px"><strong>PDF export:</strong> use <span class="mono">Report → Export to PDF</span>. This opens the browser print dialog (Save as PDF).</div>
+        </div>
+
+        <h3>Driver summary (selected)</h3>
+        <p class="muted">Totals across all saved entries for this driver.</p>
+        <div class="kpi" style="grid-template-columns:repeat(2,1fr)">
+          <div class="box">
+            <div class="t">Total hours</div>
+            <div class="v" id="sumHours">0.00</div>
+          </div>
+          <div class="box">
+            <div class="t">Total KM</div>
+            <div class="v" id="sumKm">0.0</div>
+          </div>
+          <div class="box">
+            <div class="t">Total gross</div>
+            <div class="v ok" id="sumGross">0.00</div>
+          </div>
+          <div class="box">
+            <div class="t">Avg gross / hour</div>
+            <div class="v" id="sumAvgGross">0.00</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <h3>Data storage</h3>
+        <p class="muted">
+          This HTML file works offline and stores everything in your browser. If you clear browser storage or switch device, data won’t follow.
+          For real multi-user access and stronger security, you’d host a backend (database + authentication).
+        </p>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="tab-report" class="grid hide">
+      <div class="card">
+        <h2>Driver report</h2>
+        <p class="muted">Select a driver and optional date range, then generate totals and export to PDF.</p>
+
+        <div class="row">
+          <div>
+            <label>Driver</label>
+            <select id="reportDriver"></select>
+          </div>
+          <div>
+            <label>Car filter (optional)</label>
+            <select id="reportCar">
+              <option value="">All cars</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Period</label>
+            <select id="reportPeriod">
+              <option value="custom">Custom (use From/To)</option>
+              <option value="thisWeek">This week (Mon–Sun)</option>
+              <option value="lastWeek">Last week (Mon–Sun)</option>
+              <option value="thisMonth">This month</option>
+              <option value="lastMonth">Last month</option>
+            </select>
+          </div>
+          <div class="inline right" style="align-items:flex-end">
+            <button class="btn" id="btnApplyPeriod">Apply period</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>From (optional)</label>
+            <input id="reportFrom" type="date" />
+          </div>
+          <div>
+            <label>To (optional)</label>
+            <input id="reportTo" type="date" />
+          </div>
+        </div>
+
+        <div class="inline right no-print">
+          <button class="btn" id="btnReport">Generate report</button>
+          <button class="btn primary" id="btnExportPdf">Export to PDF</button>
+        </div>
+
+        <div id="reportArea" class="hide" style="margin-top:14px">
+          <div class="hr"></div>
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap">
+            <div>
+              <h3 style="margin:0 0 4px">Report</h3>
+              <div class="muted" id="reportMeta"></div>
+            </div>
+            <div class="badge" id="reportCount">0 entries</div>
+          </div>
+
+          <div class="kpi" style="grid-template-columns:repeat(3,1fr)">
+            <div class="box">
+              <div class="t">Total hours</div>
+              <div class="v" id="rHours">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Total KM</div>
+              <div class="v" id="rKm">0.0</div>
+            </div>
+            <div class="box">
+              <div class="t">Total gross</div>
+              <div class="v ok" id="rGross">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Bolt gross</div>
+              <div class="v ok" id="rBoltGross">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Uber gross</div>
+              <div class="v ok" id="rUberGross">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Ecabs gross</div>
+              <div class="v ok" id="rEcabsGross">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Private trips gross</div>
+              <div class="v ok" id="rPrivateGross">0.00</div>
+            </div>
+
+            <div class="box">
+              <div class="t">Avg gross / hour</div>
+              <div class="v" id="rAvgGross">0.00</div>
+            <div class="t" id="rBestInline" style="margin-top:6px;color:#ffb347">Best: —</div>
+            </div>
+            <div class="box">
+              <div class="t">Total fuel (L)</div>
+              <div class="v" id="rFuelL">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Fuel / KM (L/km)</div>
+              <div class="v" id="rFuelPerKm">0.000</div>
+            </div>
+          </div>
+
+          <h3>Entries</h3>
+          <div class="tablewrap">
+            <table id="reportTable">
+              <thead>
+                <tr>
+                  <th data-col="date">Date</th>
+                  <th data-col="car">Car</th>
+                  <th data-col="start">Start</th>
+                  <th data-col="end">End</th>
+                  <th data-col="hours">Hours</th>
+                  <th data-col="km">KM</th>
+                  <th data-col="bolt">Bolt</th>
+                  <th data-col="uber">Uber</th>
+                  <th data-col="ecabs">Ecabs</th>
+                  <th data-col="private">Private</th>
+                  <th data-col="gross">Total Gross</th>
+                  <th data-col="fuel">Fuel L</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <p class="muted" style="margin-top:10px">
+            Tip: If you need an actual PDF file download button (without print dialog), you’d typically use a JS PDF library.
+            This offline single-file version uses the browser’s built-in “Save as PDF”.
+          </p>
+        </div>
+
+        <div id="reportErr" class="error hide"></div>
+      </div>
+
+      <div class="card">
+        <h2>How export works</h2>
+        <p class="muted">
+          Clicking <span class="mono">Export to PDF</span> opens your browser’s print dialog.
+          Choose <strong>Save as PDF</strong>. Only the report content prints (menus/buttons are hidden).
+        </p>
+
+        <div class="hr"></div>
+        <h3>What’s included</h3>
+        <ul class="muted">
+          <li>Totals: hours, KM, gross income, average gross/hour, fuel totals.</li>
+          <li>Entry table with date, car, times, hours, KM, gross, fuel.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="tab-admin" class="grid hide">
+      <div class="card">
+        <h2>Admin (Fleet Owner)</h2>
+        <p class="muted">Manage roles, users (username/password), and drivers/cars.</p>
+
+        <h3>Roles</h3>
+        <div class="row">
+          <div>
+            <label>New role name</label>
+            <input id="newRole" placeholder="e.g. Driver, Manager" />
+          </div>
+          <div class="inline right">
+            <button class="btn primary" id="btnAddRole">Add role</button>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table id="rolesTable">
+            <thead><tr><th>Role</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h3>Users</h3>
+        <div class="row">
+          <div>
+            <label>Username</label>
+            <input id="newUsername" placeholder="e.g. john" />
+          </div>
+          <div>
+            <label>Password</label>
+            <input id="newPassword" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Role</label>
+            <select id="newUserRole"></select>
+          </div>
+          <div class="inline right">
+            <button class="btn primary" id="btnAddUser">Add user</button>
+          </div>
+        </div>
+
+        <div class="tablewrap">
+          <table id="usersTable">
+            <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div id="adminMsg" class="notice hide"></div>
+        <div id="adminErr" class="error hide"></div>
+      </div>
+
+      <div class="card">
+        <h2>Drivers & cars</h2>
+        <p class="muted">Drivers are who you log shifts for. Cars are selectable per driver.</p>
+
+        <h3>Add driver</h3>
+        <div class="row">
+          <div>
+            <label>Driver name</label>
+            <input id="driverName" placeholder="e.g. Alex Camilleri" />
+          </div>
+          <div class="inline right">
+            <button class="btn primary" id="btnAddDriver">Add driver</button>
+          </div>
+        </div>
+
+        <h3>Add car</h3>
+        <div class="row">
+          <div>
+            <label>Car name / plate</label>
+            <input id="carName" placeholder="e.g. Toyota Prius • ABC123" />
+          </div>
+          <div class="inline right">
+            <button class="btn primary" id="btnAddCar">Add car</button>
+          </div>
+        </div>
+
+        <h3>Assign cars to driver</h3>
+        <div class="row">
+          <div>
+            <label>Driver</label>
+            <select id="assignDriver"></select>
+          </div>
+          <div>
+            <label>Car</label>
+            <select id="assignCar"></select>
+          </div>
+        </div>
+        <div class="inline right">
+          <button class="btn" id="btnAssignCar">Assign</button>
+          <button class="btn danger" id="btnUnassignCar">Unassign</button>
+        </div>
+
+        <div class="hr"></div>
+        <h3>Drivers</h3>
+        <div class="tablewrap">
+          <table id="driversTable">
+            <thead><tr><th>Driver</th><th>Cars</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h3>Cars</h3>
+        <div class="tablewrap">
+          <table id="carsTable">
+            <thead><tr><th>Car</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- ROLES & PERMISSIONS -->
+    <div id="tab-perms" class="grid hide">
+      <div class="card">
+        <h2>Roles & permissions</h2>
+        <p class="muted">As Fleet Owner, you can control what each role can access. Changes apply on next login (or after switching tabs).</p>
+
+        <div class="notice">
+          <strong>Tip:</strong> Keep <span class="mono">Fleet Owner</span> fully enabled. If you disable Admin access for a role, that role will not see admin tools.
+        </div>
+
+        <div class="hr"></div>
+        <h3>Permission matrix</h3>
+        <div class="tablewrap">
+          <table id="permsTable">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Data entry</th>
+                <th>Report</th>
+                <th>Wages</th>
+                <th>Export PDF</th>
+                <th>Admin</th>
+                <th>Drivers & cars</th>
+                <th>Users & roles</th>
+                <th>Settings</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div id="permsMsg" class="notice hide"></div>
+        <div id="permsErr" class="error hide"></div>
+
+        <div class="inline right no-print">
+          <button class="btn primary" id="btnSavePerms">Save permissions</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>What each permission does</h2>
+        <ul class="muted">
+          <li><strong>Data entry:</strong> view entry tab and save/edit/delete entries.</li>
+          <li><strong>Report:</strong> view report tab and generate reports.</li>
+          <li><strong>Wages:</strong> view wages tab and calculate wages.</li>
+          <li><strong>Export PDF:</strong> download PDF from report.</li>
+          <li><strong>Admin:</strong> view Admin tab (high-level admin tools).</li>
+          <li><strong>Drivers & cars:</strong> add/remove drivers/cars and assignments.</li>
+          <li><strong>Users & roles:</strong> add/remove users and roles.</li>
+          <li><strong>Settings:</strong> backup/restore/reset.</li>
+        </ul>
+      </div>
+    </div>
+
+
+    
+    <!-- WAGES -->
+    <div id="tab-wages" class="grid hide">
+      <div class="card">
+        <h2>Wages</h2>
+        <p class="muted">Calculate driver and fleet dividends for a selected period using wage models. This does not change entries; it generates payroll math from saved data.</p>
+
+        <div class="notice">
+          <strong>Note (model reminder):</strong>
+          <div class="muted" style="margin-top:6px">
+            Model 1 (50/50): <span class="mono">Net remaining = Total Gross - VAT(18%)</span> (calculated as <span class="mono">Total Gross * 0.1525</span>).
+            Then <span class="mono">Driver dividend = Net remaining / 2</span> and <span class="mono">Fleet dividend = Net remaining / 2</span>.
+            Commissions are <strong>20%</strong> of <strong>Bolt + Uber + Ecabs</strong> only (Private trips excluded).
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Period</label>
+            <select id="wagePeriod">
+              <option value="custom">Custom (use From/To)</option>
+              <option value="thisWeek">This week (Mon–Sun)</option>
+              <option value="lastWeek">Last week (Mon–Sun)</option>
+              <option value="thisMonth">This month</option>
+              <option value="lastMonth">Last month</option>
+            </select>
+          </div>
+          <div class="inline right" style="align-items:flex-end">
+            <button class="btn" id="btnApplyWagePeriod">Apply period</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>From (optional)</label>
+            <input id="wageFrom" type="date" />
+          </div>
+          <div>
+            <label>To (optional)</label>
+            <input id="wageTo" type="date" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Driver</label>
+            <select id="wageDriver"></select>
+          </div>
+          <div>
+            <label>Car (optional)</label>
+            <select id="wageCar"></select>
+          </div>
+        </div>
+
+        <div class="inline right no-print">
+          <button class="btn primary" id="btnCalcWages">Calculate wages</button>
+          <button class="btn" id="btnExportPayslipPdf">Per-driver payroll PDF</button>
+          <button class="btn" id="btnGenPayroll">Generate payroll</button>
+        </div>
+
+        <div id="wageErr" class="error hide"></div>
+
+        <div id="wageArea" class="hide" style="margin-top:14px">
+          <div id="payslipArea" class="hide" style="background:#0b1220; padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,.08); margin-bottom:14px">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+              <div>
+                <div class="mono" style="opacity:.85; font-size:12px">Per-driver payroll</div>
+                <div style="font-weight:800; font-size:18px" id="psDriverName">—</div>
+                <div class="muted" style="margin-top:2px" id="psPeriod">—</div>
+                <div class="muted" style="margin-top:2px" id="psModel">—</div>
+              </div>
+              <div class="mono" style="opacity:.85; font-size:12px" id="psGenerated">—</div>
+            </div>
+            <div class="hr"></div>
+            <div class="kpi">
+              <div class="box"><div class="t">Total gross</div><div class="v ok" id="psTotalGross">0.00</div></div>
+              <div class="box"><div class="t">VAT (18% — calc *0.1525)</div><div class="v" id="psVat">0.00</div></div>
+              <div class="box"><div class="t">Net remaining</div><div class="v ok" id="psNet">0.00</div></div>
+              <div class="box"><div class="t">Driver dividend</div><div class="v ok" id="psDriverDiv">0.00</div></div>
+              <div class="box"><div class="t">Fleet dividend</div><div class="v ok" id="psFleetDiv">0.00</div></div>
+              <div class="box"><div class="t">Commissions</div><div class="v" id="psComms">0.00</div></div>
+              <div class="box"><div class="t">Fleet after commissions</div><div class="v ok" id="psFleetAfter">0.00</div></div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <h3>Payroll (model output)</h3>
+
+          <div class="kpi">
+            <div class="box">
+              <div class="t">Total gross</div>
+              <div class="v ok" id="wTotalGross">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">VAT (18% — calc *0.1525)</div>
+              <div class="v" id="wVat">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Net remaining</div>
+              <div class="v ok" id="wNet">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Driver dividend (50%)</div>
+              <div class="v ok" id="wDriverDiv">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Fleet dividend (50%)</div>
+              <div class="v ok" id="wFleetDiv">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Commissions (20% of Bolt+Uber+Ecabs)</div>
+              <div class="v" id="wComms">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Fleet after commissions</div>
+              <div class="v ok" id="wFleetAfter">0.00</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <h3>Data (not payroll)</h3>
+          <div class="kpi">
+            <div class="box">
+              <div class="t">Total hours</div>
+              <div class="v" id="wHours">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Fuel expense (liters)</div>
+              <div class="v" id="wFuel">0.00</div>
+            </div>
+            <div class="box">
+              <div class="t">Net per hour</div>
+              <div class="v" id="wNetPerHour">0.00</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <h3>Breakdown</h3>
+          <div class="tablewrap">
+            <table id="wageTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Driver</th>
+                  <th>Car</th>
+                  <th>Bolt</th>
+                  <th>Uber</th>
+                  <th>Ecabs</th>
+                  <th>Private</th>
+                  <th>Total gross</th>
+                  <th>Hours</th>
+                  <th>Fuel (L)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="hr"></div>
+          <h3>Payroll summary</h3>
+          <div class="muted" style="margin-bottom:8px">Per-driver payroll lines for the selected period and filters.</div>
+          <div class="tablewrap">
+            <table id="payrollTable">
+              <thead>
+                <tr>
+                  <th>Driver</th>
+                  <th>Model</th>
+                  <th>Total gross</th>
+                  <th>VAT</th>
+                  <th>Net remaining</th>
+                  <th>Driver dividend</th>
+                  <th>Fleet dividend</th>
+                  <th>Commissions</th>
+                  <th>Fleet after commissions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Wage models</h2>
+        <p class="muted">Assign each driver to a wage model. For this test, Model 1 (50/50) is included by default.</p>
+
+        <div class="hr"></div>
+        <h3>Models</h3>
+        <div class="tablewrap">
+          <table id="wageModelsTable">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>VAT rate</th>
+                <th>Split</th>
+                <th>Commission</th>
+                <th>Commission applies to</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="hr"></div>
+        <h3>Assign drivers to models</h3>
+        <div class="row">
+          <div>
+            <label>Driver</label>
+            <select id="assignWageDriver"></select>
+          </div>
+          <div>
+            <label>Wage model</label>
+            <select id="assignWageModel"></select>
+          </div>
+        </div>
+        <div class="inline right no-print">
+          <button class="btn" id="btnAssignWageModel">Assign</button>
+          <button class="btn" id="btnUnassignWageModel">Unassign</button>
+        </div>
+        <div id="wageAssignMsg" class="notice hide"></div>
+        <div id="wageAssignErr" class="error hide"></div>
+
+        <div class="hr"></div>
+        <h3>Current assignments</h3>
+        <div class="tablewrap">
+          <table id="wageAssignTable">
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>Model</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="grid hide">
+      <div class="card">
+        <h2>Settings</h2>
+        <p class="muted">Backup/restore your local data, or reset everything.</p>
+
+        <h3>Backup</h3>
+        <p class="muted">Download a JSON backup of all users, roles, drivers, cars, and entries.</p>
+        <div class="inline no-print">
+          <button class="btn" id="btnBackup">Download backup (.json)</button>
+        </div>
+
+        <h3>Restore</h3>
+        <p class="muted">Restore from a backup JSON file (overwrites current data).</p>
+        <div class="row no-print">
+          <div>
+            <label>Select backup file</label>
+            <input type="file" id="restoreFile" accept="application/json" />
+          </div>
+          <div class="inline right">
+            <button class="btn danger" id="btnRestore">Restore</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <h3>Danger zone</h3>
+        <p class="muted">This wipes all data in this browser for this dashboard.</p>
+        <div class="inline no-print">
+          <button class="btn danger" id="btnReset">Reset everything</button>
+        </div>
+
+        <div id="settingsMsg" class="notice hide"></div>
+        <div id="settingsErr" class="error hide"></div>
+      </div>
+
+      <div class="card">
+        <h2>Security note</h2>
+        <p class="muted">
+          This is a single-file offline dashboard. Passwords are stored locally (hashed) in this browser.
+          Anyone with access to this device/browser profile could potentially access the data.
+          For real-world multi-user access, build a hosted app with a server, database, and proper authentication.
+        </p>
+      </div>
+    </div>
+  </div>
+
+<!-- PDF export (downloads a .pdf file) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
+
+<!-- Supabase client (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // TODO: Replace with your Supabase Project Settings → API values
+  const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR_ANON_PUBLIC_KEY";
+
+  window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log("Supabase connected:", window.sb);
+</script>
+
+
+<script>
+const DB_KEY = "fleet_dashboard_db_v1";
+
+function nowISO(){ return new Date().toISOString(); }
+
+function uid(prefix="id"){
+  return prefix + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+}
+
+function fmt2(n){ return (Number.isFinite(n) ? n : 0).toFixed(2); }
+function fmt1(n){ return (Number.isFinite(n) ? n : 0).toFixed(1); }
+function fmt3(n){ return (Number.isFinite(n) ? n : 0).toFixed(3); }
+
+function clamp0(n){
+  n = Number(n);
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
+function parseTimeToMinutes(t){
+  if(!t || !/^\d{2}:\d{2}$/.test(t)) return null;
+  const [hh, mm] = t.split(":").map(Number);
+  if(!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+  return hh*60 + mm;
+}
+
+function getISODate(d){
+  // Returns YYYY-MM-DD in local time
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+
+function startOfWeekMonday(d){
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = (date.getDay() + 6) % 7; // Mon=0 ... Sun=6
+  date.setDate(date.getDate() - day);
+  return date;
+}
+
+function endOfWeekSunday(d){
+  const start = startOfWeekMonday(d);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  end.setDate(end.getDate() + 6);
+  return end;
+}
+
+function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+
+function getPeriodRange(periodKey){
+  const today = new Date();
+  let fromD = null, toD = null;
+
+  if(periodKey === "thisWeek"){
+    fromD = startOfWeekMonday(today);
+    toD = endOfWeekSunday(today);
+  }else if(periodKey === "lastWeek"){
+    const startThis = startOfWeekMonday(today);
+    fromD = new Date(startThis.getFullYear(), startThis.getMonth(), startThis.getDate()-7);
+    toD = new Date(fromD.getFullYear(), fromD.getMonth(), fromD.getDate()+6);
+  }else if(periodKey === "thisMonth"){
+    fromD = startOfMonth(today);
+    toD = endOfMonth(today);
+  }else if(periodKey === "lastMonth"){
+    const lastMonthDate = new Date(today.getFullYear(), today.getMonth()-1, 1);
+    fromD = startOfMonth(lastMonthDate);
+    toD = endOfMonth(lastMonthDate);
+  }
+
+  return { from: fromD ? getISODate(fromD) : "", to: toD ? getISODate(toD) : "" };
+}
+
+function applySelectedPeriod(){
+  const period = $("reportPeriod")?.value || "custom";
+  if(period === "custom") return;
+  const range = getPeriodRange(period);
+  $("reportFrom").value = range.from;
+  $("reportTo").value = range.to;
+  buildReport();
+}
+
+
+function computeHours(startStr, endStr){
+  const s = parseTimeToMinutes(startStr);
+  const e = parseTimeToMinutes(endStr);
+  if(s === null || e === null) return 0;
+  let diff = e - s;
+  if(diff < 0) diff += 24*60; // overnight
+  return diff / 60;
+}
+
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+function loadDB(){
+  const raw = localStorage.getItem(DB_KEY);
+  if(!raw) return null;
+  try{ return JSON.parse(raw); }catch{ return null; }
+}
+
+function saveDB(db){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+function migratePermissions(){
+  // Ensure permissions exist for all roles; keep any existing values and add new keys.
+  if(!state.db.permissions) state.db.permissions = {};
+  const defaults = { entry:true, report:true, exportPdf:true, wages:false, admin:false, driversCars:false, usersRoles:false, settings:false };
+
+  const mergeDefaults = (obj, defs)=>{
+    Object.keys(defs).forEach(k=>{ if(typeof obj[k] === "undefined") obj[k] = defs[k]; });
+    return obj;
+  };
+
+  state.db.roles.forEach(r=>{
+    if(!state.db.permissions[r]){
+      state.db.permissions[r] = (r==="Fleet Owner")
+        ? { entry:true, report:true, exportPdf:true, wages:true, admin:true, driversCars:true, usersRoles:true, settings:true }
+        : { ...defaults };
+    }else{
+      if(r==="Fleet Owner"){
+        // Always keep Fleet Owner full access to avoid lockout
+        state.db.permissions[r] = { entry:true, report:true, exportPdf:true, wages:true, admin:true, driversCars:true, usersRoles:true, settings:true };
+      }else{
+        state.db.permissions[r] = mergeDefaults(state.db.permissions[r], defaults);
+      }
+    }
+  });
+
+  // Remove permissions for roles that no longer exist
+  Object.keys(state.db.permissions).forEach(r=>{
+    if(!state.db.roles.includes(r)) delete state.db.permissions[r];
+  });
+  saveDB(state.db);
+}
+
+function migrateWages(){
+  // Ensure wage model structures exist; keep existing values.
+  if(!state.db.wageModels || !Array.isArray(state.db.wageModels) || state.db.wageModels.length === 0){
+    state.db.wageModels = [
+      { id: "wm1", name: "50/50 Model 1", vatRate: 0.1525, vatDisplay: 0.18, split: 0.5, commissionRate: 0.20, commissionPlatforms: ["bolt","uber","ecabs"] }
+    ];
+  }
+  if(!state.db.driverWageModel || typeof state.db.driverWageModel !== "object"){
+    state.db.driverWageModel = {};
+  }
+  // Auto-assign a default model to any driver that doesn't have one yet
+  (state.db.drivers || []).forEach(d=>{
+    if(typeof state.db.driverWageModel[d.id] === "undefined") state.db.driverWageModel[d.id] = "__NONE__";
+  });
+  saveDB(state.db);
+}
+
+async function ensureSeed(){
+  let db = loadDB();
+  if(db) return db;
+
+  const adminHash = await sha256("warren");
+  db = {
+    version: 1,
+    createdAt: nowISO(),
+    roles: ["Fleet Owner", "Driver"],
+    wageModels: [
+      { id: "wm1", name: "50/50 Model 1", vatRate: 0.1525, vatDisplay: 0.18, split: 0.5, commissionRate: 0.20, commissionPlatforms: ["bolt","uber","ecabs"] }
+    ],
+    driverWageModel: {},
+    permissions: {
+      "Fleet Owner": { entry:true, report:true, exportPdf:true, wages:true, admin:true, driversCars:true, usersRoles:true, settings:true },
+      "Driver": { entry:true, report:true, exportPdf:true, wages:false, admin:false, driversCars:false, usersRoles:false, settings:false }
+    },
+    users: [
+      { id: uid("user"), username: "warren", passHash: adminHash, role: "Fleet Owner", createdAt: nowISO() }
+    ],
+    drivers: [
+      { id: uid("drv"), name: "Sample Driver", carIds: [] }
+    ],
+    cars: [
+      { id: uid("car"), name: "Sample Car • ABC123" }
+    ],
+    entries: []
+  };
+  db.drivers[0].carIds.push(db.cars[0].id);
+  saveDB(db);
+  return db;
+}
+
+const state = {
+  db: null,
+  session: { user: null, role: null },
+  loadedEntryId: null,
+};
+
+function $(id){ return document.getElementById(id); }
+function show(el){ el.classList.remove("hide"); }
+function hide(el){ el.classList.add("hide"); }
+
+function setMsg(id, text){
+  const el = $(id);
+  if(!el) return;
+  el.textContent = text;
+  if(text) show(el); else hide(el);
+}
+
+function currentUser(){ return state.session.user; }
+function isAdmin(){ return state.session.role === "Fleet Owner"; }
+
+function hasPerm(key){
+  const role = state.session.role;
+  const perms = state.db?.permissions?.[role];
+  // Fleet Owner always full access
+  if(role === "Fleet Owner") return true;
+  return !!perms?.[key];
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  ["entry","report","wages","admin","perms","settings"].forEach(t=>{
+    const el = $("tab-"+t);
+    if(!el) return;
+    el.classList.toggle("hide", t !== name);
+  });
+}
+
+function renderHeader(){
+  $("pillUser").textContent = state.session.user?.username ?? "—";
+  $("pillRole").textContent = state.session.role ?? "—";
+  $("subtitle").textContent = isAdmin() ? "Fleet Owner view (full access)" : "Limited access";
+  $("adminTab").classList.toggle("hide", !hasPerm("admin"));
+  $("permsTab").classList.toggle("hide", !isAdmin());
+}
+
+function renderRoleOptions(){
+  const sel = $("newUserRole");
+  sel.innerHTML = "";
+  state.db.roles.forEach(r=>{
+    const opt = document.createElement("option");
+    opt.value = r;
+    opt.textContent = r;
+    sel.appendChild(opt);
+  });
+}
+
+function renderRolesTable(){
+  const tb = $("rolesTable").querySelector("tbody");
+  tb.innerHTML = "";
+  state.db.roles.forEach(role=>{
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td");
+    td1.textContent = role;
+    const td2 = document.createElement("td");
+    const canDelete = role !== "Fleet Owner";
+    td2.innerHTML = canDelete
+      ? `<button class="btn small danger" data-delrole="${role}">Delete</button>`
+      : `<span class="badge">Protected</span>`;
+    tr.appendChild(td1); tr.appendChild(td2);
+    tb.appendChild(tr);
+  });
+}
+
+function renderUsersTable(){
+  const tb = $("usersTable").querySelector("tbody");
+  tb.innerHTML = "";
+  state.db.users.slice().sort((a,b)=>a.username.localeCompare(b.username)).forEach(u=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="mono">${escapeHtml(u.username)}</td>
+      <td>${escapeHtml(u.role)}</td>
+      <td>
+        ${u.username==="warren" ? `<span class="badge">Protected</span>` : `
+          <button class="btn small" data-reset="${u.id}">Reset password</button>
+          <button class="btn small danger" data-deluser="${u.id}">Delete</button>
+        `}
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderPermsTable(){
+  const tb = $("permsTable")?.querySelector("tbody");
+  if(!tb) return;
+  tb.innerHTML = "";
+  // Ensure permissions exist
+  migratePermissions();
+  migrateWages();
+
+  const cols = [
+    { key:"entry", label:"Data entry" },
+    { key:"report", label:"Report" },
+    { key:"wages", label:"Wages" },
+    { key:"exportPdf", label:"Export PDF" },
+    { key:"admin", label:"Admin" },
+    { key:"driversCars", label:"Drivers & cars" },
+    { key:"usersRoles", label:"Users & roles" },
+    { key:"settings", label:"Settings" },
+  ];
+
+  state.db.roles.forEach(role=>{
+    const tr = document.createElement("tr");
+    const protectedRole = (role === "Fleet Owner");
+    const perms = state.db.permissions[role] || {};
+
+    const tds = [];
+    tds.push(`<td>${escapeHtml(role)} ${protectedRole ? '<span class="badge" style="margin-left:8px">Protected</span>' : ''}</td>`);
+
+    cols.forEach(c=>{
+      const checked = !!perms[c.key];
+      const disabled = protectedRole ? "disabled" : "";
+      tds.push(
+        `<td style="text-align:center">
+           <input type="checkbox" data-role="${escapeHtml(role)}" data-perm="${c.key}" ${checked ? "checked" : ""} ${disabled}
+             style="width:18px;height:18px; accent-color: #66e3ff; cursor:${protectedRole?'not-allowed':'pointer'}" />
+         </td>`
+      );
+    });
+
+    tr.innerHTML = tds.join("");
+    tb.appendChild(tr);
+  });
+}
+
+function savePerms(){
+  if(!isAdmin()){
+    setMsg("permsErr","Only Fleet Owner can edit permissions.");
+    return;
+  }
+  setMsg("permsErr","");
+  setMsg("permsMsg","");
+
+  const inputs = Array.from(document.querySelectorAll('#permsTable input[type="checkbox"][data-role][data-perm]'));
+  inputs.forEach(inp=>{
+    const role = inp.getAttribute("data-role");
+    const perm = inp.getAttribute("data-perm");
+    if(role === "Fleet Owner") return;
+    if(!state.db.permissions[role]) state.db.permissions[role] = {};
+    state.db.permissions[role][perm] = inp.checked;
+  });
+
+  saveDB(state.db);
+  setMsg("permsMsg","Permissions saved.");
+  applyPermissionUI();
+}
+
+
+function renderDriversAndCars(){
+  const dSel = $("driverSelect");
+  const aD = $("assignDriver");
+  const rD = $("reportDriver");
+  [dSel, aD, rD].forEach(sel => sel && (sel.innerHTML=""));
+
+  // Report can be for a single driver or all drivers
+  if(rD){
+    const allOpt = document.createElement("option");
+    allOpt.value = "__ALL__";
+    allOpt.textContent = "All drivers";
+    rD.appendChild(allOpt);
+  }
+  state.db.drivers.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(d=>{
+    [dSel, aD, rD].filter(Boolean).forEach(sel=>{
+      const o = document.createElement("option");
+      o.value = d.id; o.textContent = d.name;
+      sel.appendChild(o);
+    });
+  });
+
+  const cSel = $("assignCar");
+  cSel.innerHTML = "";
+  state.db.cars.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = c.name;
+    cSel.appendChild(o);
+  });
+
+  const carsTb = $("carsTable").querySelector("tbody");
+  carsTb.innerHTML = "";
+  state.db.cars.forEach(c=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(c.name)}</td><td><button class="btn small danger" data-delcar="${c.id}">Delete</button></td>`;
+    carsTb.appendChild(tr);
+  });
+
+  const drvTb = $("driversTable").querySelector("tbody");
+  drvTb.innerHTML = "";
+  state.db.drivers.forEach(d=>{
+    const cars = d.carIds.map(id => state.db.cars.find(c=>c.id===id)?.name).filter(Boolean);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(d.name)}</td>
+      <td>${cars.length ? cars.map(c=>`<span class="badge" style="margin-right:6px">${escapeHtml(c)}</span>`).join("") : `<span class="badge">No cars assigned</span>`}</td>
+      <td><button class="btn small danger" data-deldrv="${d.id}">Delete</button></td>
+    `;
+    drvTb.appendChild(tr);
+  });
+
+  renderCarSelectForEntry();
+  renderReportCarOptions();
+  renderRecentEntries();
+  renderDriverSummary();
+}
+
+function renderCarSelectForEntry(){
+  const driverId = $("driverSelect").value;
+  const driver = state.db.drivers.find(d=>d.id===driverId);
+  const carSel = $("carSelect");
+  carSel.innerHTML = "";
+  const carIds = driver?.carIds?.length ? driver.carIds : state.db.cars.map(c=>c.id);
+  carIds.forEach(id=>{
+    const c = state.db.cars.find(x=>x.id===id);
+    if(!c) return;
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = c.name;
+    carSel.appendChild(o);
+  });
+}
+
+function renderReportCarOptions(){
+  const sel = $("reportCar");
+  const current = sel.value;
+  sel.innerHTML = `<option value="">All cars</option>`;
+  state.db.cars.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  sel.value = current || "";
+}
+
+function renderRecentEntries(){
+  const driverId = $("driverSelect").value;
+  const tb = $("recentTable").querySelector("tbody");
+  tb.innerHTML = "";
+
+  const rows = state.db.entries
+    .filter(e=>e.driverId===driverId)
+    .slice()
+    .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.updatedAt||"").localeCompare(a.updatedAt||""))
+    .slice(0, 12);
+
+  rows.forEach(e=>{
+    const tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.dataset.entryId = e.id;
+    tr.innerHTML = `
+      <td class="mono">${escapeHtml(e.date || "")}</td>
+      <td>${escapeHtml(nameOfCar(e.carId))}</td>
+      <td class="mono">${fmt2(e.hours)}</td>
+      <td class="mono">${fmt1(e.kmTotal)}</td>
+      <td class="mono">${fmt2(e.grossTotal)}</td>
+      <td class="mono">${fmt2(e.fuelLiters)}</td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  $("btnDeleteEntry").disabled = !state.loadedEntryId;
+}
+
+function renderDriverSummary(){
+  const driverId = $("driverSelect").value;
+  const entries = state.db.entries.filter(e=>e.driverId===driverId);
+
+  const totalHours = entries.reduce((s,e)=>s+clamp0(e.hours), 0);
+  const totalKm = entries.reduce((s,e)=>s+clamp0(e.kmTotal), 0);
+  const totalGross = entries.reduce((s,e)=>s+clamp0(e.grossTotal), 0);
+
+  $("sumHours").textContent = fmt2(totalHours);
+  $("sumKm").textContent = fmt1(totalKm);
+  $("sumGross").textContent = fmt2(totalGross);
+  $("sumAvgGross").textContent = fmt2(totalHours>0 ? totalGross/totalHours : 0);
+}
+
+function readEntryForm(){
+  const driverId = $("driverSelect").value;
+  const carId = $("carSelect").value;
+
+  const date = $("date").value;
+  const shiftStart = $("shiftStart").value;
+  const shiftEnd = $("shiftEnd").value;
+
+  const hours = computeHours(shiftStart, shiftEnd);
+
+  const kmStart = clamp0($("kmStart").value);
+  const kmEnd = clamp0($("kmEnd").value);
+  const kmTotal = Math.max(0, kmEnd - kmStart);
+
+  const bolt = clamp0($("bolt").value);
+  const uber = clamp0($("uber").value);
+  const ecabs = clamp0($("ecabs").value);
+  const otherTrips = clamp0($("otherTrips").value);
+  const grossTotal = bolt + uber + ecabs + otherTrips;
+  const avgGrossPerHour = hours > 0 ? grossTotal / hours : 0;
+
+  const fuelLiters = clamp0($("fuelLiters").value);
+  const fuelCost = clamp0($("fuelCost").value);
+  const fuelPerKm = kmTotal > 0 ? fuelLiters / kmTotal : 0;
+  const fuelPerHr = hours > 0 ? fuelLiters / hours : 0;
+
+  const net = grossTotal - fuelCost;
+
+  const notes = $("notes").value?.trim() || "";
+
+  return { driverId, carId, date, shiftStart, shiftEnd, hours, kmStart, kmEnd, kmTotal,
+           bolt, uber, ecabs, otherTrips, grossTotal, avgGrossPerHour,
+           fuelLiters, fuelCost, fuelPerKm, fuelPerHr, net, notes };
+}
+
+function updateKPIs(){
+  const e = readEntryForm();
+  $("kpiHours").textContent = fmt2(e.hours);
+  $("kpiKm").textContent = fmt1(e.kmTotal);
+  $("kpiGross").textContent = fmt2(e.grossTotal);
+  $("kpiAvgGross").textContent = fmt2(e.avgGrossPerHour);
+
+  $("kpiFuelPerKm").textContent = fmt3(e.fuelPerKm);
+  $("kpiFuelPerHr").textContent = fmt2(e.fuelPerHr);
+  $("kpiNet").textContent = fmt2(e.net);
+
+  renderDriverSummary();
+}
+
+function clearEntryForm(){
+  state.loadedEntryId = null;
+  $("date").value = new Date().toISOString().slice(0,10);
+  $("shiftStart").value = "";
+  $("shiftEnd").value = "";
+  $("kmStart").value = "";
+  $("kmEnd").value = "";
+  $("bolt").value = "";
+  $("uber").value = "";
+  $("ecabs").value = "";
+  $("otherTrips").value = "";
+  $("fuelLiters").value = "";
+  $("fuelCost").value = "";
+  $("notes").value = "";
+  setMsg("entryMsg","");
+  setMsg("entryErr","");
+  $("btnDeleteEntry").disabled = true;
+  updateKPIs();
+  applyPermissionUI();
+}
+
+function validateEntry(e){
+  if(!e.driverId) return "Select a driver.";
+  if(!e.carId) return "Select a car.";
+  if(!e.date) return "Select a date.";
+  if(!e.shiftStart || !e.shiftEnd) return "Enter shift start and end times.";
+  if(e.hours <= 0) return "Hours worked must be greater than 0.";
+  if(e.kmEnd && e.kmStart && e.kmEnd < e.kmStart) return "KM finish must be ≥ KM start.";
+  return "";
+}
+
+function saveEntry(){
+  if(!hasPerm("entry")){
+    setMsg("entryErr","Your role does not allow data entry.");
+    return;
+  }
+  const e = readEntryForm();
+  const err = validateEntry(e);
+  if(err){
+    setMsg("entryErr", err);
+    setMsg("entryMsg","");
+    return;
+  }
+  setMsg("entryErr","");
+
+  const user = currentUser();
+  const ts = nowISO();
+
+  if(state.loadedEntryId){
+    const idx = state.db.entries.findIndex(x=>x.id===state.loadedEntryId);
+    if(idx >= 0){
+      state.db.entries[idx] = { ...state.db.entries[idx], ...e, updatedAt: ts, updatedBy: user.username };
+    }
+    setMsg("entryMsg","Entry updated.");
+  }else{
+    const entry = { id: uid("ent"), ...e, createdAt: ts, updatedAt: ts, createdBy: user.username, updatedBy: user.username };
+    state.db.entries.push(entry);
+    setMsg("entryMsg","Entry saved.");
+  }
+
+  saveDB(state.db);
+  state.loadedEntryId = null;
+  renderRecentEntries();
+  renderDriverSummary();
+  $("btnDeleteEntry").disabled = true;
+}
+
+function loadEntryToForm(entryId){
+  const e = state.db.entries.find(x=>x.id===entryId);
+  if(!e) return;
+
+  state.loadedEntryId = e.id;
+
+  $("driverSelect").value = e.driverId;
+  renderCarSelectForEntry();
+  $("carSelect").value = e.carId;
+
+  $("date").value = e.date || "";
+  $("shiftStart").value = e.shiftStart || "";
+  $("shiftEnd").value = e.shiftEnd || "";
+  $("kmStart").value = e.kmStart ?? "";
+  $("kmEnd").value = e.kmEnd ?? "";
+  $("bolt").value = e.bolt ?? "";
+  $("uber").value = e.uber ?? "";
+  $("ecabs").value = e.ecabs ?? "";
+  $("otherTrips").value = e.otherTrips ?? "";
+  $("fuelLiters").value = e.fuelLiters ?? "";
+  $("fuelCost").value = e.fuelCost ?? "";
+  $("notes").value = e.notes || "";
+
+  setMsg("entryMsg", `Loaded entry ${e.date} (${nameOfDriver(e.driverId)}). You can edit and Save, or Delete.`);
+  setMsg("entryErr","");
+  $("btnDeleteEntry").disabled = false;
+  updateKPIs();
+  applyPermissionUI();
+}
+
+function deleteLoadedEntry(){
+  if(!hasPerm("entry")){
+    setMsg("entryErr","Your role does not allow deleting entries.");
+    return;
+  }
+  if(!state.loadedEntryId){
+    setMsg("entryErr","No entry loaded.");
+    return;
+  }
+  const id = state.loadedEntryId;
+  const idx = state.db.entries.findIndex(e=>e.id===id);
+  if(idx<0){
+    setMsg("entryErr","Entry not found.");
+    return;
+  }
+  state.db.entries.splice(idx,1);
+  saveDB(state.db);
+  state.loadedEntryId = null;
+  setMsg("entryMsg","Entry deleted.");
+  setMsg("entryErr","");
+  renderRecentEntries();
+  renderDriverSummary();
+  $("btnDeleteEntry").disabled = true;
+}
+
+function buildReport(){
+  if(!hasPerm("report")){
+    setMsg("reportErr","Your role does not allow reports.");
+    hide($("reportArea"));
+    return;
+  }
+  setMsg("reportErr","");
+  const driverSel = $("reportDriver").value;
+  const allDrivers = driverSel === "__ALL__";
+  const driverId = allDrivers ? "" : driverSel;
+
+  const carFilter = $("reportCar").value || "";
+  const from = $("reportFrom").value || "";
+  const to = $("reportTo").value || "";
+
+  const entries = state.db.entries
+    .filter(e=> allDrivers ? true : e.driverId===driverId)
+    .filter(e=> !carFilter || e.carId===carFilter)
+    .filter(e=> !from || (e.date||"") >= from)
+    .filter(e=> !to || (e.date||"") <= to)
+    .slice()
+    .sort((a,b)=>{
+      const da = (a.date||"");
+      const db = (b.date||"");
+      if(da !== db) return da.localeCompare(db);
+      return nameOfDriver(a.driverId).localeCompare(nameOfDriver(b.driverId));
+    });
+
+  if(entries.length === 0){
+    hide($("reportArea"));
+    setMsg("reportErr", "No entries found for that selection.");
+    return;
+  }
+
+  const totalHours = entries.reduce((s,e)=>s+clamp0(e.hours), 0);
+  const totalKm = entries.reduce((s,e)=>s+clamp0(e.kmTotal), 0);
+  const totalGross = entries.reduce((s,e)=>s+clamp0(e.grossTotal), 0);
+  const totalFuelL = entries.reduce((s,e)=>s+clamp0(e.fuelLiters), 0);
+  const totalBolt = entries.reduce((s,e)=>s+clamp0(e.bolt), 0);
+  const totalUber = entries.reduce((s,e)=>s+clamp0(e.uber), 0);
+  const totalEcabs = entries.reduce((s,e)=>s+clamp0(e.ecabs), 0);
+  const totalPrivate = entries.reduce((s,e)=>s+clamp0(e.otherTrips), 0);
+
+  $("rHours").textContent = fmt2(totalHours);
+  $("rKm").textContent = fmt1(totalKm);
+  $("rGross").textContent = fmt2(totalGross);
+  $("rBoltGross").textContent = fmt2(totalBolt);
+  $("rUberGross").textContent = fmt2(totalUber);
+  $("rEcabsGross").textContent = fmt2(totalEcabs);
+  $("rPrivateGross").textContent = fmt2(totalPrivate);
+  $("rAvgGross").textContent = fmt2(totalHours>0 ? totalGross/totalHours : 0);
+  $("rFuelL").textContent = fmt2(totalFuelL);
+  $("rFuelPerKm").textContent = fmt3(totalKm>0 ? totalFuelL/totalKm : 0);
+
+  // Best avg gross/hour driver within this report selection
+  const byDriver = new Map(); // driverId -> {gross, hours}
+  entries.forEach(e=>{
+    const id = e.driverId || "unknown";
+    const cur = byDriver.get(id) || { gross: 0, hours: 0 };
+    cur.gross += clamp0(e.grossTotal);
+    cur.hours += clamp0(e.hours);
+    byDriver.set(id, cur);
+  });
+
+  let bestId = null;
+  let bestAvg = 0;
+  byDriver.forEach((v, id)=>{
+    if(v.hours > 0){
+      const avg = v.gross / v.hours;
+      if(bestId === null || avg > bestAvg){
+        bestId = id;
+        bestAvg = avg;
+      }
+    }
+  });
+
+  const bestInline = $("rBestInline");
+  if(bestInline){
+    const bestName = bestId ? nameOfDriver(bestId) : "—";
+    bestInline.textContent = `Best: ${fmt2(bestAvg)} • ${bestName}`;
+  }
+
+  const meta = [];
+  meta.push(allDrivers ? "Driver: All drivers" : `Driver: ${nameOfDriver(driverId)}`);
+  if(carFilter) meta.push(`Car: ${nameOfCar(carFilter)}`);
+  if(from || to) meta.push(`Range: ${from || "…"} → ${to || "…"}`);
+  $("reportMeta").textContent = meta.join(" • ");
+  $("reportCount").textContent = `${entries.length} entr${entries.length===1?"y":"ies"}`;
+
+  // Add/remove "Driver" column dynamically
+  const table = $("reportTable");
+  const theadRow = table.querySelector("thead tr");
+  if(allDrivers){
+    if(!theadRow.querySelector("th[data-col='driver']")){
+      const th = document.createElement("th");
+      th.textContent = "Driver";
+      th.dataset.col = "driver";
+      theadRow.insertBefore(th, theadRow.firstElementChild);
+    }
+  }else{
+    const th = theadRow.querySelector("th[data-col='driver']");
+    if(th) th.remove();
+  }
+
+  const tb = table.querySelector("tbody");
+  tb.innerHTML = "";
+  entries.forEach(e=>{
+    const tr = document.createElement("tr");
+    const cells = [];
+    if(allDrivers){
+      cells.push(`<td>${escapeHtml(nameOfDriver(e.driverId))}</td>`);
+    }
+    cells.push(`<td class="mono">${escapeHtml(e.date||"")}</td>`);
+    cells.push(`<td>${escapeHtml(nameOfCar(e.carId))}</td>`);
+    cells.push(`<td class="mono">${escapeHtml(e.shiftStart||"")}</td>`);
+    cells.push(`<td class="mono">${escapeHtml(e.shiftEnd||"")}</td>`);
+    cells.push(`<td class="mono">${fmt2(e.hours)}</td>`);
+    cells.push(`<td class="mono">${fmt1(e.kmTotal)}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.bolt))}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.uber))}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.ecabs))}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.otherTrips))}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.grossTotal))}</td>`);
+    cells.push(`<td class="mono">${fmt2(clamp0(e.fuelLiters))}</td>`);
+    tr.innerHTML = cells.join("");
+    tb.appendChild(tr);
+  });
+
+  show($("reportArea"));
+}
+
+
+async function exportToPDF(){
+  if(!hasPerm("exportPdf")){
+    alert("Your role does not allow PDF export.");
+    return;
+  }
+  // Create/download a real PDF file (no print dialog)
+  if($("reportArea").classList.contains("hide")){
+    buildReport();
+    if($("reportArea").classList.contains("hide")) return;
+  }
+
+  // If libs didn't load, fallback to print
+  if(typeof html2canvas === "undefined" || !window.jspdf || !window.jspdf.jsPDF){
+    alert("PDF export library failed to load. Falling back to print dialog.");
+    window.print();
+    return;
+  }
+
+  const reportEl = $("reportArea");
+
+  // Scroll to top for consistent capture
+  const prevScroll = window.scrollY;
+  window.scrollTo(0, 0);
+
+  try{
+    const canvas = await html2canvas(reportEl, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const { jsPDF } = window.jspdf;
+
+    // A4 in points
+    const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Fit image to page width
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * (imgWidth / canvas.width);
+
+    let y = 0;
+    let remaining = imgHeight;
+
+    while(remaining > 0){
+      pdf.addImage(imgData, "PNG", 0, y, imgWidth, imgHeight);
+      remaining -= pageHeight;
+      if(remaining > 0){
+        pdf.addPage();
+        y -= pageHeight;
+      }
+    }
+
+    const safe = (s)=> String(s||"").replaceAll(/[^\w\s-]/g, "").trim().replaceAll(/\s+/g,"-");
+    const driverSel = $("reportDriver").value;
+    const driverName = (driverSel==="__ALL__") ? "all-drivers" : (safe(nameOfDriver(driverSel)) || "driver");
+    const from = $("reportFrom").value || "start";
+    const to = $("reportTo").value || "end";
+    const car = $("reportCar").value ? ("-" + safe(nameOfCar($("reportCar").value))) : "";
+    const filename = `report-${driverName}${car}-${from}-to-${to}.pdf`;
+
+    pdf.save(filename);
+  }catch(err){
+    console.error(err);
+    alert("Failed to export PDF: " + (err?.message || String(err)));
+  }finally{
+    window.scrollTo(0, prevScroll);
+  }
+}
+
+
+async function exportPayslipPDF(){
+  if(!hasPerm("exportPdf")){
+    alert("Your role does not allow PDF export.");
+    return;
+  }
+  if(!hasPerm("wages")){
+    alert("Your role does not allow wages.");
+    return;
+  }
+  const driverSel = $("wageDriver")?.value || "__ALL__";
+  if(driverSel === "__ALL__"){
+    alert("Select a single driver to export a per-driver payroll PDF.");
+    return;
+  }
+
+  // Ensure wages are calculated and payslip filled
+  calcWages();
+  const area = $("payslipArea");
+  if(!area || area.classList.contains("hide")){
+    // If wageArea hidden due to errors, stop
+    return;
+  }
+
+  // Render to PDF
+  const canvas = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor: "#0b1220" });
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jspdf.jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 24;
+  const imgWidth = pageWidth - margin*2;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  if(imgHeight <= pageHeight - margin*2){
+    pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight);
+  }else{
+    // Multi-page (rare for payslip, but safe)
+    let sourceY = 0;
+    const pxPerPt = canvas.width / imgWidth;
+    const pageContentHeightPt = pageHeight - margin*2;
+    const pageContentHeightPx = Math.floor(pageContentHeightPt * pxPerPt);
+
+    const pageCanvas = document.createElement("canvas");
+    const ctx = pageCanvas.getContext("2d");
+
+    while(sourceY < canvas.height){
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = Math.min(pageContentHeightPx, canvas.height - sourceY);
+      ctx.clearRect(0,0,pageCanvas.width,pageCanvas.height);
+      ctx.drawImage(canvas, 0, sourceY, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+      const pageImg = pageCanvas.toDataURL("image/png");
+      const pageImgHeightPt = (pageCanvas.height * imgWidth) / pageCanvas.width;
+      pdf.addImage(pageImg, "PNG", margin, margin, imgWidth, pageImgHeightPt);
+      sourceY += pageCanvas.height;
+      if(sourceY < canvas.height) pdf.addPage();
+    }
+  }
+
+  const from = $("wageFrom")?.value || "";
+  const to = $("wageTo")?.value || "";
+  const drv = nameOfDriver(driverSel).replace(/\s+/g,"-").toLowerCase();
+  const dateTag = (from || to) ? `${from||"start"}_to_${to||"end"}` : getISODate(new Date());
+  pdf.save(`payslip-${drv}-${dateTag}.pdf`);
+}
+
+
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+function nameOfDriver(id){ return state.db.drivers.find(d=>d.id===id)?.name ?? "Unknown driver"; }
+function nameOfCar(id){ return state.db.cars.find(c=>c.id===id)?.name ?? "Unknown car"; }
+
+function addRole(){
+  const role = $("newRole").value.trim();
+  if(!role) return setMsg("adminErr","Role name is required.");
+  if(state.db.roles.includes(role)) return setMsg("adminErr","That role already exists.");
+  state.db.roles.push(role);
+  // default permissions for new role (non-admin)
+  if(!state.db.permissions) state.db.permissions = {};
+  if(!state.db.permissions[role]) state.db.permissions[role] = { entry:true, report:true, exportPdf:true, wages:false, admin:false, driversCars:false, usersRoles:false, settings:false };
+  saveDB(state.db);
+  $("newRole").value = "";
+  setMsg("adminErr","");
+  setMsg("adminMsg","Role added.");
+  renderRoleOptions(); renderRolesTable();
+}
+
+function deleteRole(role){
+  if(role === "Fleet Owner") return;
+  if(state.db.users.some(u=>u.role===role)){
+    setMsg("adminErr","Cannot delete role: it is assigned to one or more users.");
+    return;
+  }
+  state.db.roles = state.db.roles.filter(r=>r!==role);
+  if(state.db.permissions) delete state.db.permissions[role];
+  saveDB(state.db);
+  setMsg("adminErr","");
+  setMsg("adminMsg","Role deleted.");
+  renderRoleOptions(); renderRolesTable();
+}
+
+async function addUser(){
+  const username = $("newUsername").value.trim();
+  const password = $("newPassword").value;
+  const role = $("newUserRole").value;
+
+  if(!username) return setMsg("adminErr","Username is required.");
+  if(!password) return setMsg("adminErr","Password is required.");
+  if(state.db.users.some(u=>u.username.toLowerCase()===username.toLowerCase()))
+    return setMsg("adminErr","That username is already taken.");
+
+  const passHash = await sha256(password);
+  state.db.users.push({ id: uid("user"), username, passHash, role, createdAt: nowISO() });
+  saveDB(state.db);
+
+  $("newUsername").value = "";
+  $("newPassword").value = "";
+  setMsg("adminErr","");
+  setMsg("adminMsg","User added.");
+  renderUsersTable();
+}
+
+async function resetUserPassword(userId){
+  const u = state.db.users.find(x=>x.id===userId);
+  if(!u) return;
+  const pw = prompt(`Set a new password for "${u.username}":`);
+  if(pw === null) return;
+  if(!pw) return alert("Password cannot be empty.");
+  u.passHash = await sha256(pw);
+  saveDB(state.db);
+  setMsg("adminMsg","Password reset.");
+  renderUsersTable();
+}
+
+function deleteUser(userId){
+  const u = state.db.users.find(x=>x.id===userId);
+  if(!u) return;
+  if(!confirm(`Delete user "${u.username}"?`)) return;
+  state.db.users = state.db.users.filter(x=>x.id!==userId);
+  saveDB(state.db);
+  setMsg("adminMsg","User deleted.");
+  renderUsersTable();
+}
+
+function addDriver(){
+  const name = $("driverName").value.trim();
+  if(!name) return setMsg("adminErr","Driver name is required.");
+  state.db.drivers.push({ id: uid("drv"), name, carIds: [] });
+  saveDB(state.db);
+  $("driverName").value = "";
+  setMsg("adminErr","");
+  setMsg("adminMsg","Driver added.");
+  renderDriversAndCars();
+}
+
+function deleteDriver(driverId){
+  const d = state.db.drivers.find(x=>x.id===driverId);
+  if(!d) return;
+  if(!confirm(`Delete driver "${d.name}"? Entries for this driver will remain but become orphaned.`)) return;
+  state.db.drivers = state.db.drivers.filter(x=>x.id!==driverId);
+  saveDB(state.db);
+  renderDriversAndCars();
+}
+
+function addCar(){
+  const name = $("carName").value.trim();
+  if(!name) return setMsg("adminErr","Car name is required.");
+  state.db.cars.push({ id: uid("car"), name });
+  saveDB(state.db);
+  $("carName").value = "";
+  setMsg("adminErr","");
+  setMsg("adminMsg","Car added.");
+  renderDriversAndCars();
+}
+
+function deleteCar(carId){
+  const c = state.db.cars.find(x=>x.id===carId);
+  if(!c) return;
+  if(!confirm(`Delete car "${c.name}"? It will be removed from driver assignments.`)) return;
+  state.db.cars = state.db.cars.filter(x=>x.id!==carId);
+  state.db.drivers.forEach(d=> d.carIds = d.carIds.filter(id=>id!==carId));
+  saveDB(state.db);
+  renderDriversAndCars();
+}
+
+function assignCar(toAssign=true){
+  if(!hasPerm("driversCars")){
+    setMsg("adminErr","Your role cannot manage driver/car assignments.");
+    return;
+  }
+  const driverId = $("assignDriver").value;
+  const carId = $("assignCar").value;
+  const d = state.db.drivers.find(x=>x.id===driverId);
+  if(!d) return;
+
+  if(toAssign){
+    if(!d.carIds.includes(carId)) d.carIds.push(carId);
+    setMsg("adminMsg","Car assigned to driver.");
+  }else{
+    d.carIds = d.carIds.filter(id=>id!==carId);
+    setMsg("adminMsg","Car unassigned from driver.");
+  }
+  saveDB(state.db);
+  renderDriversAndCars();
+}
+
+function downloadText(filename, text, mime="text/plain"){
+  const blob = new Blob([text], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function backup(){
+  const payload = JSON.stringify(state.db, null, 2);
+  downloadText(`fleet-dashboard-backup-${new Date().toISOString().slice(0,10)}.json`, payload, "application/json");
+  setMsg("settingsMsg","Backup downloaded.");
+  setMsg("settingsErr","");
+}
+
+function restore(){
+  const file = $("restoreFile").files?.[0];
+  if(!file) return setMsg("settingsErr","Choose a backup file first.");
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(String(reader.result || ""));
+      if(!data || typeof data !== "object") throw new Error("Invalid JSON.");
+      if(!Array.isArray(data.users) || !Array.isArray(data.roles) || !Array.isArray(data.entries))
+        throw new Error("Backup missing required fields.");
+      state.db = data;
+      migratePermissions();
+      migrateWages();
+      saveDB(state.db);
+      setMsg("settingsErr","");
+      setMsg("settingsMsg","Restore completed.");
+      rerenderAll();
+    }catch(err){
+      setMsg("settingsErr", "Restore failed: " + (err?.message || String(err)));
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAll(){
+  if(!confirm("Reset everything? This will erase all stored data for this dashboard in this browser.")) return;
+  localStorage.removeItem(DB_KEY);
+  location.reload();
+}
+
+async function login(){
+  setMsg("loginMsg","");
+  const username = $("loginUser").value.trim();
+  const password = $("loginPass").value;
+
+  if(!username || !password){
+    setMsg("loginMsg","Enter username and password.");
+    return;
+  }
+
+  const passHash = await sha256(password);
+  const u = state.db.users.find(x => x.username.toLowerCase() === username.toLowerCase());
+
+  if(!u || u.passHash !== passHash){
+    setMsg("loginMsg","Invalid username or password.");
+    return;
+  }
+
+  state.session.user = u;
+  state.session.role = u.role;
+
+  hide($("loginView"));
+  show($("appView"));
+  renderHeader();
+
+  if(!$("date").value){
+    $("date").value = new Date().toISOString().slice(0,10);
+  }
+
+  rerenderAll();
+  updateKPIs();
+  switchTab(hasPerm("entry") ? "entry" : "report");
+}
+
+function logout(){
+  state.session.user = null;
+  state.session.role = null;
+  state.loadedEntryId = null;
+
+  show($("loginView"));
+  hide($("appView"));
+  $("loginPass").value = "";
+  setMsg("loginMsg","");
+}
+
+function applyPermissionUI(){
+  // Tabs visibility
+  const wagesTab = document.querySelector('.tab[data-tab="wages"]');
+  if(wagesTab) wagesTab.classList.toggle('hide', !hasPerm('wages'));
+  document.querySelector('.tab[data-tab="entry"]').classList.toggle('hide', !hasPerm('entry'));
+  document.querySelector('.tab[data-tab="report"]').classList.toggle('hide', !hasPerm('report'));
+  document.querySelector('.tab[data-tab="settings"]').classList.toggle('hide', !hasPerm('settings'));
+  // Entry actions
+  const canEntry = hasPerm('entry');
+  if($('btnSave')) $('btnSave').disabled = !canEntry;
+  if($('btnClear')) $('btnClear').disabled = !canEntry;
+  if($('btnDeleteEntry')) $('btnDeleteEntry').disabled = !canEntry || !state.loadedEntryId;
+  // Report export
+  const canExport = hasPerm('exportPdf');
+  if($('btnExportPdf')) $('btnExportPdf').disabled = !canExport;
+  // Admin tab internal controls
+  const canUsersRoles = hasPerm('usersRoles');
+  const canDriversCars = hasPerm('driversCars');
+  // Users/Roles controls
+  ['btnAddRole','btnAddUser'].forEach(id=>{ if($(id)) $(id).disabled = !canUsersRoles; });
+  // Drivers/Cars controls
+  ['btnAddDriver','btnAddCar','btnAssignCar','btnUnassignCar'].forEach(id=>{ if($(id)) $(id).disabled = !canDriversCars; });
+  // Settings controls
+  ['btnBackup','btnRestore','btnReset'].forEach(id=>{ if($(id)) $(id).disabled = !hasPerm('settings'); });
+}
+
+function rerenderAll(){
+  renderHeader();
+  $("adminTab").classList.toggle("hide", !hasPerm("admin"));
+  $("permsTab").classList.toggle("hide", !isAdmin());
+  if(!hasPerm("admin") || !hasPerm("entry")){
+    const active = document.querySelector(".tab.active")?.dataset?.tab;
+    if(active === "admin") switchTab(hasPerm("entry") ? "entry" : "report");
+  }
+  if(!isAdmin()){
+    const active = document.querySelector(".tab.active")?.dataset?.tab;
+    if(active === "perms") switchTab(hasPerm("entry") ? "entry" : "report");
+  }
+  renderRoleOptions();
+  renderRolesTable();
+  renderUsersTable();
+  renderPermsTable();
+  renderDriversAndCars();
+  renderWageModels();
+  renderWageSelectors();
+  renderWageAssignments();
+  const curRD = $("reportDriver").value;
+  if(!curRD) $("reportDriver").value = $("driverSelect").value;
+  applyPermissionUI();
+}
+
+function wireTabs(){
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click", ()=>{
+      const name = t.dataset.tab;
+      if(name === "admin" && !hasPerm("admin")) return;
+      if(name === "perms" && !isAdmin()) return;
+      if(name === "entry" && !hasPerm("entry")) return;
+      if(name === "report" && !hasPerm("report")) return;
+      if(name === "wages" && !hasPerm("wages")) return;
+      if(name === "settings" && !hasPerm("settings")) return;
+      switchTab(name);
+    });
+  });
+}
+
+function wireEntryForm(){
+  ["driverSelect","carSelect","date","shiftStart","shiftEnd","kmStart","kmEnd","bolt","uber","ecabs","otherTrips","fuelLiters","fuelCost"]
+    .forEach(id=>{
+      $(id).addEventListener("input", ()=>{
+        if(id === "driverSelect"){
+          renderCarSelectForEntry();
+          renderRecentEntries();
+          renderDriverSummary();
+        }
+        updateKPIs();
+      });
+      $(id).addEventListener("change", ()=>{
+        if(id === "driverSelect"){
+          renderCarSelectForEntry();
+          renderRecentEntries();
+          renderDriverSummary();
+        }
+        updateKPIs();
+      });
+    });
+
+  $("btnSave").addEventListener("click", saveEntry);
+  $("btnClear").addEventListener("click", clearEntryForm);
+  $("btnDeleteEntry").addEventListener("click", deleteLoadedEntry);
+
+  $("recentTable").addEventListener("click", (ev)=>{
+    const tr = ev.target.closest("tr");
+    const id = tr?.dataset?.entryId;
+    if(id) loadEntryToForm(id);
+  });
+}
+
+function wireReport(){
+  $("btnReport").addEventListener("click", buildReport);
+  $("btnExportPdf").addEventListener("click", exportToPDF);
+  if($("btnApplyPeriod")) $("btnApplyPeriod").addEventListener("click", applySelectedPeriod);
+  if($("reportPeriod")) $("reportPeriod").addEventListener("change", ()=>{
+    if($("reportPeriod").value !== "custom") applySelectedPeriod();
+  });
+  ["reportDriver","reportCar","reportFrom","reportTo"].forEach(id=>{
+    $(id).addEventListener("change", ()=> setMsg("reportErr",""));
+  });
+}
+
+function renderWageModels(){
+  const tb = $("wageModelsTable")?.querySelector("tbody");
+  if(!tb) return;
+  tb.innerHTML = "";
+  (state.db.wageModels || []).forEach(m=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(m.name)}</td>
+      <td class="mono">${fmt3((m.vatRate||0)*100)}%</td>
+      <td class="mono">${Math.round((m.split??0.5)*100)}/${Math.round((1-(m.split??0.5))*100)}</td>
+      <td class="mono">${Math.round((m.commissionRate||0)*100)}%</td>
+      <td>${escapeHtml((m.commissionPlatforms||[]).join(", ").toUpperCase())}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderWageSelectors(){
+  // ensure wage models + canonical names exist
+  migrateWages();
+  const drivers = (state.db.drivers || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  const cars = (state.db.cars || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
+
+  const wd = $("wageDriver");
+  if(wd){
+    wd.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "__ALL__";
+    all.textContent = "All drivers";
+    wd.appendChild(all);
+    drivers.forEach(d=>{
+      const o = document.createElement("option");
+      o.value = d.id; o.textContent = d.name;
+      wd.appendChild(o);
+    });
+  }
+
+  const wc = $("wageCar");
+  if(wc){
+    wc.innerHTML = "";
+    const any = document.createElement("option");
+    any.value = "";
+    any.textContent = "Any car";
+    wc.appendChild(any);
+    cars.forEach(c=>{
+      const o = document.createElement("option");
+      o.value = c.id; o.textContent = c.name;
+      wc.appendChild(o);
+    });
+  }
+
+  const awd = $("assignWageDriver");
+  if(awd){
+    awd.innerHTML = "";
+    drivers.forEach(d=>{
+      const o = document.createElement("option");
+      o.value = d.id; o.textContent = d.name;
+      awd.appendChild(o);
+    });
+  }
+
+  const awm = $("assignWageModel");
+  if(awm){
+    awm.innerHTML = "";    (state.db.wageModels || []).forEach(m=>{
+      const o = document.createElement("option");
+      o.value = m.id; o.textContent = m.name;
+      awm.appendChild(o);
+    });
+  }
+}
+
+function renderWageAssignments(){
+  const tb = $("wageAssignTable")?.querySelector("tbody");
+  if(!tb) return;
+  tb.innerHTML = "";
+  const map = state.db.driverWageModel || {};
+  const drivers = (state.db.drivers || []).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  drivers.forEach(d=>{
+    const mid = (typeof map[d.id] === "undefined" || map[d.id] === "__NONE__") ? "__NONE__" : map[d.id];
+    const model = (mid==="__NONE__") ? { name:"Unassigned" } : ((state.db.wageModels||[]).find(x=>x.id===mid) || { name: "50/50 Model 1" });
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(d.name)}</td><td>${escapeHtml(model.name)}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function assignWageModel(){
+  if(!isAdmin()){
+    setMsg("wageAssignErr","Only Fleet Owner can assign wage models.");
+    setMsg("wageAssignMsg","");
+    return;
+  }
+  setMsg("wageAssignErr","");
+  setMsg("wageAssignMsg","");
+  const did = $("assignWageDriver")?.value || "";
+  const mid = $("assignWageModel")?.value || "";
+  if(!did || !mid){
+    setMsg("wageAssignErr","Select driver and model.");
+    return;
+  }
+  if(!state.db.driverWageModel) state.db.driverWageModel = {};
+  state.db.driverWageModel[did] = mid;
+  saveDB(state.db);
+  setMsg("wageAssignMsg","Assignment saved.");
+  renderWageAssignments();
+}
+
+function unassignWageModel(){
+  if(!isAdmin()){
+    setMsg("wageAssignErr","Only Fleet Owner can unassign wage models.");
+    setMsg("wageAssignMsg","");
+    return;
+  }
+  setMsg("wageAssignErr","");
+  setMsg("wageAssignMsg","");
+  const did = $("assignWageDriver")?.value || "";
+  if(!did){
+    setMsg("wageAssignErr","Select a driver to unassign.");
+    return;
+  }
+  if(!state.db.driverWageModel) state.db.driverWageModel = {};
+  state.db.driverWageModel[did] = "__NONE__";
+  saveDB(state.db);
+  setMsg("wageAssignMsg","Driver unassigned from wage model.");
+  renderWageAssignments();
+}
+
+function generatePayroll(){
+  if(!hasPerm("wages")){
+    setMsg("wageErr","Your role does not allow wages.");
+    return;
+  }
+  setMsg("wageErr","");
+  const driverSel = $("wageDriver")?.value || "__ALL__";
+  const allDrivers = driverSel === "__ALL__";
+  const carFilter = $("wageCar")?.value || "";
+  const from = $("wageFrom")?.value || "";
+  const to = $("wageTo")?.value || "";
+
+  const baseEntries = (state.db.entries || [])
+    .filter(e=> allDrivers ? true : e.driverId===driverSel)
+    .filter(e=> !carFilter || e.carId===carFilter)
+    .filter(e=> !from || (e.date||"") >= from)
+    .filter(e=> !to || (e.date||"") <= to);
+
+  if(baseEntries.length === 0){
+    setMsg("wageErr","No entries found for that selection.");
+    return;
+  }
+
+  // Group by driver
+  const by = new Map();
+  baseEntries.forEach(e=>{
+    const id = e.driverId || "unknown";
+    const cur = by.get(id) || { bolt:0, uber:0, ecabs:0, priv:0, gross:0 };
+    cur.bolt += clamp0(e.bolt);
+    cur.uber += clamp0(e.uber);
+    cur.ecabs += clamp0(e.ecabs);
+    cur.priv += clamp0(e.otherTrips);
+    cur.gross += clamp0(e.grossTotal);
+    by.set(id, cur);
+  });
+
+  const tb = $("payrollTable")?.querySelector("tbody");
+  if(!tb) return;
+  tb.innerHTML = "";
+
+  const rows = [];
+  by.forEach((v, driverId)=>{
+    const assigned = (state.db.driverWageModel||{})[driverId];
+    const modelId = (typeof assigned==="undefined") ? "__NONE__" : (assigned || "__NONE__");
+    if(modelId === "__NONE__"){
+      rows.push({ driverId, modelName:"Unassigned", gross:v.gross, vat:null, net:null, driverDiv:null, fleetDiv:null, comms:null, fleetAfter:null });
+      return;
+    }
+    const model = (state.db.wageModels||[]).find(m=>m.id===modelId) || { vatRate:0.1525, vatDisplay:0.18, split:0.5, commissionRate:0.2, commissionPlatforms:["bolt","uber","ecabs"], name: "50/50 Model 1" };
+
+    const vat = v.gross * (model.vatRate||0);
+    const net = v.gross - vat;
+    const driverDiv = net * (model.split ?? 0.5);
+    const fleetDiv = net - driverDiv;
+    const commBase = v.bolt + v.uber + v.ecabs;
+    const comms = commBase * (model.commissionRate||0);
+    const fleetAfter = fleetDiv - comms;
+
+    rows.push({ driverId, modelName:model.name, gross:v.gross, vat, net, driverDiv, fleetDiv, comms, fleetAfter });
+  });
+
+  rows.sort((a,b)=> nameOfDriver(a.driverId).localeCompare(nameOfDriver(b.driverId)));
+
+  rows.forEach(r=>{
+    const tr = document.createElement("tr");
+    const dName = escapeHtml(nameOfDriver(r.driverId));
+    const modelName = escapeHtml(r.modelName || "");
+    const cell = (x)=> (x===null || typeof x==="undefined") ? "—" : fmt2(x);
+    tr.innerHTML = `
+      <td>${dName}</td>
+      <td>${modelName}</td>
+      <td class="mono">${cell(r.gross)}</td>
+      <td class="mono">${cell(r.vat)}</td>
+      <td class="mono">${cell(r.net)}</td>
+      <td class="mono">${cell(r.driverDiv)}</td>
+      <td class="mono">${cell(r.fleetDiv)}</td>
+      <td class="mono">${cell(r.comms)}</td>
+      <td class="mono">${cell(r.fleetAfter)}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function applyWagePeriod(){
+  const period = $("wagePeriod")?.value || "custom";
+  if(period === "custom") return;
+  const range = getPeriodRange(period);
+  $("wageFrom").value = range.from;
+  $("wageTo").value = range.to;
+  calcWages();
+}
+
+function calcWages(){
+  if(!hasPerm("wages")){
+    setMsg("wageErr","Your role does not allow wages.");
+    hide($("wageArea"));
+    return;
+  }
+  setMsg("wageErr","");
+  const driverSel = $("wageDriver")?.value || "__ALL__";
+  const allDrivers = driverSel === "__ALL__";
+  const carFilter = $("wageCar")?.value || "";
+  const from = $("wageFrom")?.value || "";
+  const to = $("wageTo")?.value || "";
+
+  const entries = (state.db.entries || [])
+    .filter(e=> allDrivers ? true : e.driverId===driverSel)
+    .filter(e=> !carFilter || e.carId===carFilter)
+    .filter(e=> !from || (e.date||"") >= from)
+    .filter(e=> !to || (e.date||"") <= to)
+    .slice()
+    .sort((a,b)=> (a.date||"").localeCompare(b.date||"") || nameOfDriver(a.driverId).localeCompare(nameOfDriver(b.driverId)));
+
+  if(entries.length === 0){
+    hide($("wageArea"));
+    setMsg("wageErr","No entries found for that selection.");
+    return;
+  }
+
+  // Model selection:
+  // - if single driver: use assigned model
+  // - if all drivers: use Model 1 for this test
+  const assigned = (state.db.driverWageModel||{})[driverSel];
+  const modelId = allDrivers ? "wm1" : (assigned || "__NONE__");
+  if(!allDrivers && (assigned === "__NONE__" || typeof assigned === "undefined")){
+    hide($("wageArea"));
+    setMsg("wageErr","This driver is unassigned from any wage model.");
+    return;
+  }
+  const model = (state.db.wageModels||[]).find(m=>m.id===modelId) || { vatRate:0.1525, vatDisplay:0.18, split:0.5, commissionRate:0.2, commissionPlatforms:["bolt","uber","ecabs"], name: "50/50 Model 1" };
+
+  const totalBolt = entries.reduce((s,e)=>s+clamp0(e.bolt), 0);
+  const totalUber = entries.reduce((s,e)=>s+clamp0(e.uber), 0);
+  const totalEcabs = entries.reduce((s,e)=>s+clamp0(e.ecabs), 0);
+  const totalPrivate = entries.reduce((s,e)=>s+clamp0(e.otherTrips), 0);
+  const totalGross = entries.reduce((s,e)=>s+clamp0(e.grossTotal), 0);
+
+  const vat = totalGross * (model.vatRate || 0);
+  const net = totalGross - vat;
+
+  const driverDiv = net * (model.split ?? 0.5);
+  const fleetDiv = net - driverDiv;
+
+  const commBase = totalBolt + totalUber + totalEcabs; // private excluded
+  const comms = commBase * (model.commissionRate || 0);
+  const fleetAfter = fleetDiv - comms;
+
+  const totalHours = entries.reduce((s,e)=>s+clamp0(e.hours), 0);
+  const totalFuel = entries.reduce((s,e)=>s+clamp0(e.fuelLiters), 0);
+  const netPerHour = totalHours>0 ? net/totalHours : 0;
+
+  $("wTotalGross").textContent = fmt2(totalGross);
+  $("wVat").textContent = fmt2(vat);
+  $("wNet").textContent = fmt2(net);
+  $("wDriverDiv").textContent = fmt2(driverDiv);
+  $("wFleetDiv").textContent = fmt2(fleetDiv);
+  $("wComms").textContent = fmt2(comms);
+  $("wFleetAfter").textContent = fmt2(fleetAfter);
+
+  $("wHours").textContent = fmt2(totalHours);
+  $("wFuel").textContent = fmt2(totalFuel);
+  $("wNetPerHour").textContent = fmt2(netPerHour);
+
+
+  // Payslip (single driver only)
+  const ps = $("payslipArea");
+  if(ps){
+    if(allDrivers){
+      hide(ps);
+    }else{
+      // show and populate
+      show(ps);
+      $("psDriverName").textContent = nameOfDriver(driverSel);
+      const pFrom = $("wageFrom")?.value || "";
+      const pTo = $("wageTo")?.value || "";
+      $("psPeriod").textContent = (pFrom || pTo) ? `Period: ${pFrom || "—"} to ${pTo || "—"}` : "Period: All time";
+      $("psModel").textContent = `Model: ${model.name || "—"}`;
+      $("psGenerated").textContent = `Generated: ${getISODate(new Date())}`;
+      $("psTotalGross").textContent = fmt2(totalGross);
+      $("psVat").textContent = fmt2(vat);
+      $("psNet").textContent = fmt2(net);
+      $("psDriverDiv").textContent = fmt2(driverDiv);
+      $("psFleetDiv").textContent = fmt2(fleetDiv);
+      $("psComms").textContent = fmt2(comms);
+      $("psFleetAfter").textContent = fmt2(fleetAfter);
+    }
+  }
+
+  const tb = $("wageTable").querySelector("tbody");
+  tb.innerHTML = "";
+  entries.forEach(e=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="mono">${escapeHtml(e.date||"")}</td>
+      <td>${escapeHtml(nameOfDriver(e.driverId))}</td>
+      <td>${escapeHtml(nameOfCar(e.carId))}</td>
+      <td class="mono">${fmt2(clamp0(e.bolt))}</td>
+      <td class="mono">${fmt2(clamp0(e.uber))}</td>
+      <td class="mono">${fmt2(clamp0(e.ecabs))}</td>
+      <td class="mono">${fmt2(clamp0(e.otherTrips))}</td>
+      <td class="mono">${fmt2(clamp0(e.grossTotal))}</td>
+      <td class="mono">${fmt2(clamp0(e.hours))}</td>
+      <td class="mono">${fmt2(clamp0(e.fuelLiters))}</td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  show($("wageArea"));
+}
+
+function wireWages(){
+  if($("btnCalcWages")) $("btnCalcWages").addEventListener("click", calcWages);
+  if($("btnExportPayslipPdf")) $("btnExportPayslipPdf").addEventListener("click", exportPayslipPDF);
+  if($("btnAssignWageModel")) $("btnAssignWageModel").addEventListener("click", assignWageModel);
+  if($("btnUnassignWageModel")) $("btnUnassignWageModel").addEventListener("click", unassignWageModel);
+  if($("btnGenPayroll")) $("btnGenPayroll").addEventListener("click", generatePayroll);
+  if($("btnApplyWagePeriod")) $("btnApplyWagePeriod").addEventListener("click", applyWagePeriod);
+  if($("wagePeriod")) $("wagePeriod").addEventListener("change", ()=>{ if($("wagePeriod").value !== "custom") applyWagePeriod(); });
+  if($("wageDriver")) $("wageDriver").addEventListener("change", ()=>{
+    // hide payslip when all drivers selected
+    const ps = $("payslipArea");
+    if(ps && $("wageDriver").value === "__ALL__") hide(ps);
+  });
+  ["wageFrom","wageTo"].forEach(id=>{
+    if($(id)) $(id).addEventListener("change", ()=>{ if($("wagePeriod")) $("wagePeriod").value = "custom"; });
+  });
+}
+
+function wireAdmin(){
+  $("btnAddRole").addEventListener("click", addRole);
+  $("rolesTable").addEventListener("click", (ev)=>{
+    const role = ev.target?.dataset?.delrole;
+    if(role) deleteRole(role);
+  });
+
+  $("btnAddUser").addEventListener("click", ()=> addUser());
+  $("usersTable").addEventListener("click", (ev)=>{
+    const resetId = ev.target?.dataset?.reset;
+    const delId = ev.target?.dataset?.deluser;
+    if(resetId) resetUserPassword(resetId);
+    if(delId) deleteUser(delId);
+  });
+
+  $("btnAddDriver").addEventListener("click", addDriver);
+  $("btnAddCar").addEventListener("click", addCar);
+  $("btnAssignCar").addEventListener("click", ()=>assignCar(true));
+  $("btnUnassignCar").addEventListener("click", ()=>assignCar(false));
+
+  $("driversTable").addEventListener("click", (ev)=>{
+    const id = ev.target?.dataset?.deldrv;
+    if(id) deleteDriver(id);
+  });
+  $("carsTable").addEventListener("click", (ev)=>{
+    const id = ev.target?.dataset?.delcar;
+    if(id) deleteCar(id);
+  });
+}
+
+function wireSettings(){
+  $("btnBackup").addEventListener("click", backup);
+  $("btnRestore").addEventListener("click", restore);
+  $("btnReset").addEventListener("click", resetAll);
+}
+
+function wirePerms(){
+  if($("btnSavePerms")) $("btnSavePerms").addEventListener("click", savePerms);
+}
+
+function wireAuth(){
+  $("btnLogin").addEventListener("click", login);
+  $("btnLogout").addEventListener("click", logout);
+  $("loginPass").addEventListener("keydown", (e)=>{ if(e.key === "Enter") login(); });
+  $("loginUser").addEventListener("keydown", (e)=>{ if(e.key === "Enter") login(); });
+}
+
+(async function init(){
+  state.db = await ensureSeed();
+  migratePermissions();
+  wireAuth(); wireTabs(); wireEntryForm(); wireReport(); wireWages(); wireAdmin(); wireSettings(); wirePerms();
+  rerenderAll();
+  clearEntryForm();
+  $("loginUser").value = "warren";
+  $("loginUser").focus();
+})();
+</script>
+</body>
+</html>
+
+
+<!-- Supabase Auth (one-fleet) + RLS-aware loading -->
+<script>
+  // Map your desired UI permissions per role (client-side UX only; RLS is the real security)
+  const ROLE_PERMS = {
+    "Fleet Owner":              { entry:true, report:true, wages:true, exportPdf:true, admin:true, driversCars:true, usersRoles:true, settings:true },
+    "Fleet Operations Manager": { entry:true, report:true, wages:true, exportPdf:true, admin:true, driversCars:true, usersRoles:false, settings:false },
+    "Fleet Manager":            { entry:true, report:true, wages:true, exportPdf:true, admin:false, driversCars:true, usersRoles:false, settings:false },
+    "Fleet Supervisor":         { entry:true, report:true, wages:true, exportPdf:true, admin:false, driversCars:true, usersRoles:false, settings:false },
+    "Fleet Driver":             { entry:true, report:true, wages:false, exportPdf:true, admin:false, driversCars:false, usersRoles:false, settings:false }
+  };
+
+  async function getMyMembershipOneFleet() {
+    const { data, error } = await window.sb
+      .from("fleet_memberships")
+      .select("fleet_id, role")
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) throw new Error("No fleet_memberships row found for this user.");
+    return data; // {fleet_id, role}
+  }
+
+  async function loadFleetData(fleetId, role) {
+    // Load drivers, cars, assignments, entries filtered by fleet_id
+    const [driversRes, carsRes, dcRes, entriesRes] = await Promise.all([
+      window.sb.from("drivers").select("id, name").eq("fleet_id", fleetId).order("name"),
+      window.sb.from("cars").select("id, name").eq("fleet_id", fleetId).order("name"),
+      window.sb.from("driver_cars").select("driver_id, car_id").eq("fleet_id", fleetId),
+      window.sb.from("entries")
+        .select("id, driver_id, car_id, date, shift_start, shift_end, hours, km_start, km_end, km_total, bolt, uber, ecabs, other_trips, gross_total, fuel_liters, fuel_cost, net, notes, created_by, updated_by, created_at, updated_at")
+        .eq("fleet_id", fleetId)
+        .order("date", { ascending: false })
+    ]);
+
+    const err = driversRes.error || carsRes.error || dcRes.error || entriesRes.error;
+    if (err) throw err;
+
+    const drivers = driversRes.data || [];
+    const cars = carsRes.data || [];
+    const driverCars = dcRes.data || [];
+    const entries = entriesRes.data || [];
+
+    // Overwrite in-memory DB used by the UI
+    window.state.db.drivers = drivers.map(d => ({ id: d.id, name: d.name, carIds: [] }));
+    window.state.db.cars = cars.map(c => ({ id: c.id, name: c.name }));
+    const byDriver = new Map(window.state.db.drivers.map(d => [d.id, d]));
+    driverCars.forEach(dc => { const drv = byDriver.get(dc.driver_id); if (drv) drv.carIds.push(dc.car_id); });
+
+    window.state.db.entries = entries.map(e => ({
+      id: e.id,
+      driverId: e.driver_id,
+      carId: e.car_id,
+      date: e.date,
+      shiftStart: (e.shift_start || "").slice(0,5),
+      shiftEnd: (e.shift_end || "").slice(0,5),
+      hours: Number(e.hours || 0),
+      kmStart: Number(e.km_start || 0),
+      kmEnd: Number(e.km_end || 0),
+      kmTotal: Number(e.km_total || 0),
+      bolt: Number(e.bolt || 0),
+      uber: Number(e.uber || 0),
+      ecabs: Number(e.ecabs || 0),
+      otherTrips: Number(e.other_trips || 0),
+      grossTotal: Number(e.gross_total || 0),
+      fuelLiters: Number(e.fuel_liters || 0),
+      fuelCost: Number(e.fuel_cost || 0),
+      net: Number(e.net || 0),
+      notes: e.notes || "",
+      createdAt: e.created_at,
+      updatedAt: e.updated_at,
+      createdBy: e.created_by,
+      updatedBy: e.updated_by,
+    }));
+
+    if (typeof renderDriversAndCars === "function") renderDriversAndCars();
+    if (typeof renderHeader === "function") renderHeader();
+
+    console.log("Loaded fleet data from Supabase:", { fleetId, role, drivers: drivers.length, cars: cars.length, entries: entries.length });
+  }
+
+  function applyRolePerms(role) {
+    // Ensure app's permission engine sees your role and perms
+    if (!window.state.db.permissions) window.state.db.permissions = {};
+    // Keep Fleet Owner protected behavior if your code enforces it
+    window.state.db.permissions[role] = ROLE_PERMS[role] || ROLE_PERMS["Fleet Driver"];
+    window.state.session.role = role;
+
+    // Make sure the role exists in the UI role list so perms rendering won't break
+    if (Array.isArray(window.state.db.roles) && !window.state.db.roles.includes(role)) {
+      window.state.db.roles.push(role);
+    }
+  }
+
+  async function signInEmailPassword(email, password) {
+    const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.session;
+  }
+
+  async function bootAfterAuth(session) {
+    // Show app, hide login (your file uses "hide" class)
+    const loginView = document.getElementById("loginView");
+    const appView = document.getElementById("appView");
+    if (loginView) loginView.classList.add("hide");
+    if (appView) appView.classList.remove("hide");
+
+    // Populate user display
+    const email = session?.user?.email || "user";
+    window.state.session.user = { username: email };
+
+    // Membership (one fleet)
+    const mem = await getMyMembershipOneFleet(); // { fleet_id, role }
+    window.state.session.fleetId = mem.fleet_id;
+    applyRolePerms(mem.role);
+
+    // Load data filtered by fleet
+    await loadFleetData(mem.fleet_id, mem.role);
+  }
+
+  async function initAuthOneFleet() {
+    if (!window.sb) return;
+
+    // Hook login button: treat Username field as email
+    const btnLogin = document.getElementById("btnLogin");
+    const emailEl = document.getElementById("loginUser");
+    const passEl = document.getElementById("loginPass");
+    const loginMsg = document.getElementById("loginMsg");
+
+    if (btnLogin) {
+      btnLogin.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          if (loginMsg) loginMsg.classList.add("hide");
+          const email = (emailEl?.value || "").trim();
+          const password = passEl?.value || "";
+          const session = await signInEmailPassword(email, password);
+          await bootAfterAuth(session);
+        } catch (err) {
+          console.error(err);
+          if (loginMsg) {
+            loginMsg.textContent = "Login failed: " + (err?.message || err);
+            loginMsg.classList.remove("hide");
+          } else {
+            alert("Login failed: " + (err?.message || err));
+          }
+        }
+      }, { capture: true });
+    }
+
+    // Hook logout
+    const btnLogout = document.getElementById("btnLogout");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", async () => {
+        await window.sb.auth.signOut();
+        location.reload();
+      });
+    }
+
+    // Existing session?
+    const { data } = await window.sb.auth.getSession();
+    if (data?.session) {
+      await bootAfterAuth(data.session);
+    } else {
+      // Ensure login view visible
+      const loginView = document.getElementById("loginView");
+      const appView = document.getElementById("appView");
+      if (loginView) loginView.classList.remove("hide");
+      if (appView) appView.classList.add("hide");
+    }
+
+    // Keep UI in sync if session changes
+    window.sb.auth.onAuthStateChange(async (_event, session) => {
+      if (session) await bootAfterAuth(session);
+    });
+  }
+
+  // Start auth after your app has seeded state.db (ensureSeed runs on DOM load in your script)
+  window.addEventListener("load", () => {
+    initAuthOneFleet();
+  });
+</script>
+
